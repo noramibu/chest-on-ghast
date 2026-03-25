@@ -1,54 +1,51 @@
 package me.noramibu.mixin;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.HappyGhastEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.ChestMinecartEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.animal.happyghast.HappyGhast;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.Team;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import net.minecraft.entity.EquipmentSlot;
 
-@Mixin(HappyGhastEntity.class)
+@Mixin(HappyGhast.class)
 public abstract class HappyGhastEntityMixin {
-    @Inject(method = "interactMob", at = @At("HEAD"), cancellable = true)
-    private void interactMob(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        HappyGhastEntity ghast = (HappyGhastEntity) (Object) this;
-        ItemStack itemStack = player.getStackInHand(hand);
-        if (itemStack.isOf(Items.CHEST_MINECART) && ghast.getPassengerList().size() < 3 && !ghast.getEquippedStack(EquipmentSlot.BODY).isEmpty()) {
-            if (!ghast.getEntityWorld().isClient()) {
-                ChestMinecartEntity chestMinecart = new ChestMinecartEntity(EntityType.CHEST_MINECART, ghast.getEntityWorld());
-                chestMinecart.refreshPositionAndAngles(ghast.getX(), ghast.getY(), ghast.getZ(), ghast.getYaw(), ghast.getPitch());
-                ghast.getEntityWorld().spawnEntity(chestMinecart);
+    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
+    private void mobInteract(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        HappyGhast ghast = (HappyGhast) (Object) this;
+        ItemStack itemStack = player.getItemInHand(hand);
+        if (itemStack.is(Items.CHEST_MINECART) && ghast.getPassengers().size() < 3 && !ghast.getItemBySlot(EquipmentSlot.BODY).isEmpty()) {
+            if (!ghast.level().isClientSide()) {
+                MinecartChest chestMinecart = new MinecartChest(EntityType.CHEST_MINECART, ghast.level());
+                chestMinecart.setInitialPos(ghast.getX(), ghast.getY(), ghast.getZ());
+                ghast.level().addFreshEntity(chestMinecart);
                 chestMinecart.startRiding(ghast);
-                if (!player.getAbilities().creativeMode)
-                    itemStack.decrement(1);
-                if (ghast.getEntityWorld() instanceof ServerWorld serverWorld) {
-                    Scoreboard scoreboard = serverWorld.getScoreboard();
-                    Team team = scoreboard.getTeam("NoCollision");
+                if (!player.getAbilities().instabuild) {
+                    itemStack.shrink(1);
+                }
+                if (ghast.level() instanceof ServerLevel serverLevel) {
+                    Scoreboard scoreboard = serverLevel.getScoreboard();
+                    PlayerTeam team = scoreboard.getPlayerTeam("NoCollision");
                     if (team == null) {
-                        team = scoreboard.addTeam("NoCollision");
+                        team = scoreboard.addPlayerTeam("NoCollision");
                         team.setCollisionRule(Team.CollisionRule.NEVER);
                     } else if (team.getCollisionRule() != Team.CollisionRule.NEVER) {
                         team.setCollisionRule(Team.CollisionRule.NEVER);
                     }
-                    String command = String.format("team join NoCollision %s", chestMinecart.getUuidAsString());
-                    try {
-                        serverWorld.getServer().getCommandManager().executeWithPrefix(
-                            serverWorld.getServer().getCommandSource().withSilent(), command
-                        );
-                    } catch (Exception ignored) {}
+                    scoreboard.addPlayerToTeam(chestMinecart.getScoreboardName(), team);
                 }
             }
-            cir.setReturnValue(ActionResult.SUCCESS);
+            cir.setReturnValue(InteractionResult.SUCCESS);
         }
     }
 }

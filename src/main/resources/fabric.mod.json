@@ -23,8 +23,9 @@
 		"chest-on-ghast.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.14",
-        "minecraft": "~1.21.9",
-		"java": ">=21"
+		"fabricloader": ">=0.18.4",
+		"fabric-api": "*",
+		"minecraft": "~26.1",
+		"java": ">=25"
 	}
 }
