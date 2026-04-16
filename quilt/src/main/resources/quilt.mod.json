@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "quilt_loader": {
+    "group": "${mod_group_id}",
+    "id": "${mod_id}",
+    "version": "${version}",
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "metadata": {
+      "name": "${mod_name}",
+      "description": "${mod_description}",
+      "license": "${mod_license}",
+      "contributors": {
+        "${mod_authors}": "Developer"
+      },
+      "contact": {
+        "sources": "${mod_repository}"
+      },
+      "icon": "assets/chest-on-ghast/icon.png"
+    },
+    "depends": [
+      {
+        "id": "quilt_loader",
+        "versions": ">=${quilt_loader}"
+      },
+      {
+        "id": "minecraft",
+        "versions": "~${minecraft_compat_min}"
+      },
+      {
+        "id": "java",
+        "versions": ">=${java_version}"
+      },
+      {
+        "id": "fabric-api",
+        "versions": "*"
+      }
+    ],
+    "entrypoints": {
+      "init": "me.noramibu.ChestOnGhastQuilt"
+    }
+  },
+  "mixin": [
+    "chest-on-ghast.mixins.json"
+  ]
+}

@@ -1,0 +1,51 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${fabric_loom_version}"
+    id 'maven-publish'
+}
+
+base {
+    archivesName = "${mod_archive_name}-fabric"
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+    withSourcesJar()
+}
+
+repositories {
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
+}
+
+sourceSets {
+    main {
+        java.srcDir "${rootProject.projectDir}/common/src/main/java"
+        resources.srcDir "${rootProject.projectDir}/common/src/main/resources"
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    compileOnly "net.fabricmc:sponge-mixin:0.17.0+mixin.0.8.7"
+}
+
+processResources {
+    def props = [
+            version             : project.version,
+            mod_id              : mod_id_fabric,
+            mod_name            : mod_name,
+            mod_description     : mod_description,
+            mod_license         : mod_license,
+            mod_authors         : mod_authors,
+            mod_repository      : mod_repository,
+            minecraft_compat_min: minecraft_compat_min,
+            java_version        : java_version,
+            fabric_loader       : fabric_loader_version
+    ]
+
+    inputs.properties props
+    filesMatching('fabric.mod.json') {
+        expand props
+    }
+}

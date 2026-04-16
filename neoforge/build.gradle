@@ -1,0 +1,71 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version "${moddev_gradle_version}"
+}
+
+base {
+    archivesName = "${mod_archive_name}-neoforge"
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+    withSourcesJar()
+}
+
+sourceSets {
+    main {
+        java.srcDir "${rootProject.projectDir}/common/src/main/java"
+        resources.srcDir "${rootProject.projectDir}/common/src/main/resources"
+    }
+}
+
+dependencies {
+    compileOnly 'org.spongepowered:mixin:0.8.7'
+}
+
+neoForge {
+    version = neo_version
+
+    runs {
+        client {
+            client()
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id_neoforge}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+processResources {
+    def props = [
+            version             : project.version,
+            mod_id              : mod_id_neoforge,
+            mod_name            : mod_name,
+            mod_description     : mod_description,
+            mod_license         : mod_license,
+            mod_authors         : mod_authors,
+            mod_repository      : mod_repository,
+            minecraft_compat_min: minecraft_compat_min,
+            minecraft_compat_max: minecraft_compat_max,
+            neo_version         : neo_version
+    ]
+
+    inputs.properties props
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand props
+    }
+}
