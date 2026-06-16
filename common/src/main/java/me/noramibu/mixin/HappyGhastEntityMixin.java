@@ -3,7 +3,7 @@ package me.noramibu.mixin;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.happyghast.HappyGhast;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +26,7 @@ public abstract class HappyGhastEntityMixin {
         ItemStack itemStack = player.getItemInHand(hand);
         if (itemStack.is(Items.CHEST_MINECART) && ghast.getPassengers().size() < 3 && !ghast.getItemBySlot(EquipmentSlot.BODY).isEmpty()) {
             if (!ghast.level().isClientSide()) {
-                MinecartChest chestMinecart = new MinecartChest(EntityType.CHEST_MINECART, ghast.level());
+                MinecartChest chestMinecart = new MinecartChest(EntityTypes.CHEST_MINECART, ghast.level());
                 chestMinecart.setInitialPos(ghast.getX(), ghast.getY(), ghast.getZ());
                 ghast.level().addFreshEntity(chestMinecart);
                 chestMinecart.startRiding(ghast);
