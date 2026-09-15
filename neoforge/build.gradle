@@ -59,8 +59,8 @@ processResources {
             mod_license         : mod_license,
             mod_authors         : mod_authors,
             mod_repository      : mod_repository,
-            minecraft_compat_min: minecraft_compat_min,
-            minecraft_compat_max: minecraft_compat_max,
+            minecraft_compat_min: neo_minecraft_compat_min,
+            minecraft_compat_max: neo_minecraft_compat_max,
             neo_version         : neo_version
     ]
 
